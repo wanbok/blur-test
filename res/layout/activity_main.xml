@@ -1,0 +1,19 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity" >
+
+    <WebView android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    
+    <com.mintech.blur.ControllerView android:id="@+id/controller"
+        android:background="@android:color/background_dark"
+        android:alpha="0.8"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:hapticFeedbackEnabled="true" />
+
+</RelativeLayout>
