@@ -10,9 +10,9 @@ import android.graphics.Color;
 import android.graphics.Picture;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
-import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.webkit.WebChromeClient;
@@ -20,25 +20,24 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.RelativeLayout.LayoutParams;
+import android.widget.ScrollView;
 
 
 public class MainActivity extends Activity {
 	
 	public static final String TAG = "MainActivity";
 	private Context mContext;
-	private WebView mWebView;
-	private TextureView mTextureView;
+	private MainWebView mWebView;
 	private ControllerView mController;
+	private ScrollView mScrollView;
 	private BlurView mBlurView;
+	private Bitmap mBitmap;
 	
 	public Bitmap getBitmapForVisibleRegion(WebView webview) {
 	    Bitmap returnedBitmap = null;
-	    webview.setClipBounds(new Rect(0, 100, 0, 300));
 	    webview.setDrawingCacheEnabled(true);	    
 	    returnedBitmap = Bitmap.createBitmap(webview.getDrawingCache());
 	    webview.setDrawingCacheEnabled(false);
-	    webview.setClipBounds(new Rect(0, 0, 0, 0));
 	    return returnedBitmap;
 	}
 	
@@ -49,9 +48,8 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		mContext = this.getApplicationContext();
 		
-		mWebView = (WebView)findViewById(R.id.webview);
+		mWebView = (MainWebView)findViewById(R.id.webview);
 		mWebView.getSettings().setJavaScriptEnabled(true);
-//		mWebView.loadUrl("http://wanbok.com/blur_for_one_image.html");
 		mWebView.loadUrl("http://mintech.kr/");
 		mWebView.setWebChromeClient(new WebChromeClient());
 
@@ -84,20 +82,24 @@ public class MainActivity extends Activity {
 
 				if(loadingFinished && !redirect){
 					//HIDE LOADING IT HAS FINISHED
-					mBlurView.setPicture(mWebView.capturePicture());
+					mBlurView.setAlpha(1.f);
+					mBitmap = BlurEngine.pictureDrawable2Bitmap(mWebView.capturePicture());
+					mBlurView.setImageBitmap(mBitmap);
+					mBlurView.post(new Runnable() {
+						@Override
+						public void run() {
+							mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + mScrollView.getTop());
+						}
+					});
 				} else{
 					redirect = false; 
 				}
-
 			}
 		});
-
-		mBlurView = new BlurView(getBaseContext());
-		mBlurView.setBackgroundColor(Color.argb(120, 50, 200, 50));
-		RelativeLayout parentLayout = (RelativeLayout)findViewById(R.id.layout);
-		parentLayout.addView(mBlurView);
 		
-//		mTextureView = (TextureView)findViewById(R.id.textureview);
+		mScrollView = (ScrollView) findViewById(R.id.scrollView);
+		mWebView.setDelegateScrollView(mScrollView);
+		mBlurView = (BlurView) findViewById(R.id.blurView);
 		
 		mController = (ControllerView) findViewById(R.id.controller);
 		mController.setOnTouchListener(new OnTouchListener() {
@@ -105,12 +107,13 @@ public class MainActivity extends Activity {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				float y = event.getRawY();
-//				Float height = Float.valueOf(v.getLayoutParams().height);
-//				mWebView.loadUrl("javascript:doBlur("+height.toString()+");");
 				if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
 					mController.resizeHeightByDrag(oldY, y);
-				} else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-					mBlurView.setPicture(mWebView.capturePicture());
+					mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + mScrollView.getTop());
+					mScrollView.setLayoutParams((RelativeLayout.LayoutParams) mController.getLayoutParams());
+//					mScrollView.setScrollX(mWebView.getScrollX());
+//					mScrollView.setScrollY(mWebView.getScrollY() + mScrollView.getTop());
+//				} else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 				}
 				oldY = y;
 				return true;
