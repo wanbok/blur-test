@@ -1,19 +1,37 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity" >
 
-    <WebView android:id="@+id/webview"
+    <com.mintech.blur.MainWebView
+        android:id="@+id/webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    
-    <com.mintech.blur.ControllerView android:id="@+id/controller"
-        android:background="@android:color/background_dark"
-        android:alpha="0.8"
-        android:layout_alignParentBottom="true"
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:scrollbars="none"
+        android:overScrollMode="never"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:hapticFeedbackEnabled="true" />
+        android:layout_alignParentBottom="true" >
+
+        <com.mintech.blur.BlurView
+            android:id="@+id/blurView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:alpha="0.0"
+            android:background="#000" />
+    </ScrollView>
+
+    <com.mintech.blur.ControllerView
+        android:id="@+id/controller"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"
+        android:alpha="0.5"
+        android:background="@android:color/background_dark" />
 
 </RelativeLayout>
