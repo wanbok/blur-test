@@ -5,12 +5,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Picture;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,7 +12,6 @@ import android.view.View.OnTouchListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 
@@ -102,17 +95,16 @@ public class MainActivity extends Activity {
 		mBlurView = (BlurView) findViewById(R.id.blurView);
 		
 		mController = (ControllerView) findViewById(R.id.controller);
+		mController.setReferenceView(mWebView);
 		mController.setOnTouchListener(new OnTouchListener() {
 			private float oldY = 0.f;
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				float y = event.getRawY();
 				if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-					mController.resizeHeightByDrag(oldY, y);
-					mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + mScrollView.getTop());
+					int top = mController.resizeHeightByDrag(oldY, y);
 					mScrollView.setLayoutParams((RelativeLayout.LayoutParams) mController.getLayoutParams());
-//					mScrollView.setScrollX(mWebView.getScrollX());
-//					mScrollView.setScrollY(mWebView.getScrollY() + mScrollView.getTop());
+					mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + top);
 //				} else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 				}
 				oldY = y;
