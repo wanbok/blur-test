@@ -1,10 +1,7 @@
 package com.mintech.blur;
 
 import android.content.Context;
-import android.graphics.Matrix;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.ImageView;
 
 public class BlurView extends ImageView {
