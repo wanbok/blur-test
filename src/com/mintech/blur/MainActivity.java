@@ -1,6 +1,7 @@
 package com.mintech.blur;
 
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -12,9 +13,7 @@ import android.view.View.OnTouchListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
-
 
 public class MainActivity extends Activity {
 	
@@ -25,6 +24,24 @@ public class MainActivity extends Activity {
 	private ScrollView mScrollView;
 	private BlurView mBlurView;
 	private Bitmap mBitmap;
+	private BlurEngine mBlurEngine;
+	
+	private String html = "<!DOCTYPE html><html>" +
+			"<head>" +
+				"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=5.0\">" +
+				"<script src=\"http://mintshop.com/lazy_loader.js\"></script>" +
+				"<style>img { display: block; } </style>" +
+			"</head>" +
+			"<body>" +
+				"<img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_001.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
+				"<img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_002.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
+				"<img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_003.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
+				"<img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_004.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
+				"<img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_001.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
+				"<img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_002.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
+				"<img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_003.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
+				"<img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_004.JPEG' width=\"100%\" style=\"min-height: 1000px;\"> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_005.JPEG' width=\"100%\" style=\"min-height: 1000px;\"> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47374/mintshop_001.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
+			"</body></html>";
 	
 	public Bitmap getBitmapForVisibleRegion(WebView webview) {
 	    Bitmap returnedBitmap = null;
@@ -38,12 +55,16 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 		setContentView(R.layout.activity_main);
-		mContext = this.getApplicationContext();
+		mContext = this;
+		
+		mBlurEngine = new BlurEngine(mContext);
 		
 		mWebView = (MainWebView)findViewById(R.id.webview);
 		mWebView.getSettings().setJavaScriptEnabled(true);
-		mWebView.loadUrl("http://mintech.kr/");
+		mWebView.loadData(html, "text/html", "UTF-8");
 		mWebView.setWebChromeClient(new WebChromeClient());
 
 		mWebView.setWebViewClient(new WebViewClient() {
@@ -76,7 +97,7 @@ public class MainActivity extends Activity {
 				if(loadingFinished && !redirect){
 					//HIDE LOADING IT HAS FINISHED
 					mBlurView.setAlpha(1.f);
-					mBitmap = BlurEngine.pictureDrawable2Bitmap(mWebView.capturePicture());
+					mBitmap = mBlurEngine.pictureDrawable2Bitmap(mWebView.capturePicture());
 					mBlurView.setImageBitmap(mBitmap);
 					mBlurView.post(new Runnable() {
 						@Override
@@ -103,7 +124,7 @@ public class MainActivity extends Activity {
 				float y = event.getRawY();
 				if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
 					int top = mController.resizeHeightByDrag(oldY, y);
-					mScrollView.setLayoutParams((RelativeLayout.LayoutParams) mController.getLayoutParams());
+					mScrollView.setLayoutParams(mController.getLayoutParams());
 					mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + top);
 //				} else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
 				}

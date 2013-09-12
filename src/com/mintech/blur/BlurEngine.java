@@ -1,17 +1,19 @@
 package com.mintech.blur;
 //
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Picture;
 import android.graphics.Bitmap.Config;
 import android.graphics.drawable.PictureDrawable;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.util.DisplayMetrics;
-//import android.renderscript.Allocation;
-//import android.renderscript.Element;
-//import android.renderscript.RenderScript;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
 //
 public class BlurEngine {
-//	private RenderScript mRS;
+	private RenderScript mRS;
 //	private ScriptC_horzblur mHorizontalScript;
 //	private ScriptC_vertblur mVerticalScript;
 //	private ScriptC_blur mBlurScript;
@@ -69,19 +71,36 @@ public class BlurEngine {
 //	    // Add more iterations if you like or simply make a loop
 //	    alloc1.copyTo(dst);
 //	}
+	
+	private Context mContext;
 
-	public static Bitmap pictureDrawable2Bitmap(Picture picture) {
-		PictureDrawable pd = new PictureDrawable(picture);
-		Bitmap bitmap = Bitmap.createBitmap(pd.getIntrinsicWidth(), pd.getIntrinsicHeight(), Config.ARGB_8888);
+	public BlurEngine(Context context) {
+		mContext = context;
+	}
+
+	public Bitmap pictureDrawable2Bitmap(Picture picture) {
+		Bitmap bitmap = Bitmap.createBitmap(picture.getWidth(), picture.getHeight(), Config.ARGB_8888);
 		Canvas canvas = new Canvas(bitmap);
 		canvas.setDensity(DisplayMetrics.DENSITY_DEFAULT/2);
-		canvas.drawPicture(pd.getPicture());
-		bitmap = Bitmap.createScaledBitmap(bitmap, pd.getIntrinsicWidth()/2, pd.getIntrinsicHeight()/2, true);
-		blurfast(bitmap, 5);
+		canvas.drawPicture(picture);
+		bitmap = Bitmap.createScaledBitmap(bitmap, picture.getWidth()/2, picture.getHeight()/2, true);
+		blurByRenderscript(bitmap, 5.f);
+//		blurfast(bitmap, 5);
 		return bitmap;
 	}
 
-	public static void blurfast(Bitmap bmp, int radius) {
+	private void blurByRenderscript(Bitmap source, float radius) {
+        final RenderScript rs = RenderScript.create(mContext);
+        final Allocation input = Allocation.createFromBitmap(rs, source); //, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
+        final Allocation output = Allocation.createTyped( rs, input.getType() );
+        final ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create( rs, Element.U8_4( rs ) );
+        script.setRadius( 3.f );
+        script.setInput(input);
+        script.forEach(output);
+        output.copyTo(source);
+	}
+
+	public void blurfast(Bitmap bmp, int radius) {
 		int w = bmp.getWidth();
 		int h = bmp.getHeight();
 		int[] pix = new int[w * h];
