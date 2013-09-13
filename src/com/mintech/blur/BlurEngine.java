@@ -1,81 +1,83 @@
 package com.mintech.blur;
-//
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Picture;
 import android.graphics.Bitmap.Config;
-import android.graphics.drawable.PictureDrawable;
 import android.renderscript.ScriptIntrinsicBlur;
 import android.util.DisplayMetrics;
 import android.renderscript.Allocation;
 import android.renderscript.Element;
 import android.renderscript.RenderScript;
-//
+
 public class BlurEngine {
 	private RenderScript mRS;
-//	private ScriptC_horzblur mHorizontalScript;
-//	private ScriptC_vertblur mVerticalScript;
+	private ScriptC_horzblur mHorizontalScript;
+	private ScriptC_vertblur mVerticalScript;
 //	private ScriptC_blur mBlurScript;
-//
-//	private Allocation alloc1;
-//	private Allocation alloc2;
-//
-//	private void hblur(int radius, Allocation index, Allocation in, Allocation out) {
-//	    mHorizontalScript.set_W(radius);
-//	    mHorizontalScript.bind_in(in);
-//	    mHorizontalScript.bind_out(out);
-//	    mHorizontalScript.invoke_init_calc();
-//	    mHorizontalScript.forEach_root(index);
-//	}
-//
-//	private void vblur(int radius, Allocation index, Allocation in, Allocation out) {
-//	    mHorizontalScript.set_W(radius);
-//	    mVerticalScript.bind_in(in);
-//	    mVerticalScript.bind_out(out);
-//	    mVerticalScript.invoke_init_calc();
-//	    mVerticalScript.forEach_root(index);
-//	}
-//
-//	Bitmap blur(Bitmap org, int radius) {
-//	    Bitmap out = Bitmap.createBitmap(org.getWidth(), org.getHeight(), org.getConfig());
-//
-//	    blur(org, out, radius);
-//
-//	    return out;
-//	}
-//
-//	private Allocation createIndex(int size) {
-//	    Element element = Element.U16(mRS);
-//	    Allocation allocation = Allocation.createSized(mRS, element, size);
-//	    short[] rows = new short[size];
-//	    for (int i = 0; i < rows.length; i++) rows[i] = (short)i;
-//	    allocation.copyFrom(rows);
-//
-//	    return allocation;
-//	}
-//
-//	private void blur(Bitmap src, Bitmap dst, int r) {
-//	    Allocation alloc1 = Allocation.createFromBitmap(mRS, src);
-//	    Allocation alloc2 = Allocation.createTyped(mRS, alloc1.getType());
-//
-//	    Allocation hIndexAllocation = createIndex(alloc1.getType().getY());
-//	    Allocation vIndexAllocation = createIndex(alloc1.getType().getX());
-//
-//	    // Iteration 1
-//	    hblur(r, hIndexAllocation, alloc1, alloc2);
-//	    vblur(r, vIndexAllocation, alloc2, alloc1);
-//	    // Iteration 2
-//	    hblur(r, hIndexAllocation, alloc1, alloc2);
-//	    vblur(r, vIndexAllocation, alloc2, alloc1);
-//	    // Add more iterations if you like or simply make a loop
-//	    alloc1.copyTo(dst);
-//	}
+
+	private Allocation alloc1;
+	private Allocation alloc2;
+
+	private void hblur(int radius, Allocation index, Allocation in, Allocation out) {
+	    mHorizontalScript.set_W(radius);
+	    mHorizontalScript.bind_in(in);
+	    mHorizontalScript.bind_out(out);
+	    mHorizontalScript.invoke_init_calc();
+	    mHorizontalScript.forEach_root(index);
+	}
+
+	private void vblur(int radius, Allocation index, Allocation in, Allocation out) {
+	    mHorizontalScript.set_W(radius);
+	    mVerticalScript.bind_in(in);
+	    mVerticalScript.bind_out(out);
+	    mVerticalScript.invoke_init_calc();
+	    mVerticalScript.forEach_root(index);
+	}
+
+	Bitmap blur(Bitmap org, int radius) {
+	    Bitmap out = Bitmap.createBitmap(org.getWidth(), org.getHeight(), org.getConfig());
+
+	    blur(org, out, radius);
+
+	    return out;
+	}
+
+	private Allocation createIndex(int size) {
+	    Element element = Element.U16(mRS);
+	    Allocation allocation = Allocation.createSized(mRS, element, size);
+	    short[] rows = new short[size];
+	    for (int i = 0; i < rows.length; i++) rows[i] = (short)i;
+	    allocation.copyFrom(rows);
+
+	    return allocation;
+	}
+
+	private void blur(Bitmap src, Bitmap dst, int r) {
+	    Allocation alloc1 = Allocation.createFromBitmap(mRS, src);
+	    Allocation alloc2 = Allocation.createTyped(mRS, alloc1.getType());
+
+	    Allocation hIndexAllocation = createIndex(alloc1.getType().getY());
+	    Allocation vIndexAllocation = createIndex(alloc1.getType().getX());
+
+	    // Iteration 1
+	    hblur(r, hIndexAllocation, alloc1, alloc2);
+	    vblur(r, vIndexAllocation, alloc2, alloc1);
+	    // Iteration 2
+	    hblur(r, hIndexAllocation, alloc1, alloc2);
+	    vblur(r, vIndexAllocation, alloc2, alloc1);
+	    // Add more iterations if you like or simply make a loop
+	    alloc1.copyTo(dst);
+	}
 	
 	private Context mContext;
 
 	public BlurEngine(Context context) {
 		mContext = context;
+		mRS = RenderScript.create(mContext);
+		mHorizontalScript = new ScriptC_horzblur(mRS);
+		mVerticalScript = new ScriptC_vertblur(mRS);
 	}
 
 	public Bitmap pictureDrawable2Bitmap(Picture picture) {
@@ -83,17 +85,18 @@ public class BlurEngine {
 		Canvas canvas = new Canvas(bitmap);
 		canvas.setDensity(DisplayMetrics.DENSITY_DEFAULT/2);
 		canvas.drawPicture(picture);
-		bitmap = Bitmap.createScaledBitmap(bitmap, picture.getWidth()/2, picture.getHeight()/2, true);
-		blurByRenderscript(bitmap, 5.f);
+		
+		bitmap = Bitmap.createScaledBitmap(bitmap, picture.getWidth()/2, picture.getHeight()/4, true);
+		bitmap = blur(bitmap, 5);
+//		blurByRenderscript(bitmap, 5.f);
 //		blurfast(bitmap, 5);
 		return bitmap;
 	}
 
 	private void blurByRenderscript(Bitmap source, float radius) {
-        final RenderScript rs = RenderScript.create(mContext);
-        final Allocation input = Allocation.createFromBitmap(rs, source); //, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
-        final Allocation output = Allocation.createTyped( rs, input.getType() );
-        final ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create( rs, Element.U8_4( rs ) );
+        final Allocation input = Allocation.createFromBitmap(mRS, source); //, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
+        final Allocation output = Allocation.createTyped(mRS, input.getType() );
+        final ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create(mRS, Element.U8_4( mRS ) );
         script.setRadius( 3.f );
         script.setInput(input);
         script.forEach(output);

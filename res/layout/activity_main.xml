@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             android:alpha="0.0"
             android:background="#000" />
+        
     </ScrollView>
 
     <com.mintech.blur.ControllerView
