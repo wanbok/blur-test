@@ -15,7 +15,7 @@ public class BlurEngine {
 	private RenderScript mRS;
 	private ScriptC_horzblur mHorizontalScript;
 	private ScriptC_vertblur mVerticalScript;
-//	private ScriptC_blur mBlurScript;
+	private ScriptC_Gaussian mGaussianScript;
 
 	private Allocation alloc1;
 	private Allocation alloc2;
@@ -34,6 +34,19 @@ public class BlurEngine {
 	    mVerticalScript.bind_out(out);
 	    mVerticalScript.invoke_init_calc();
 	    mVerticalScript.forEach_root(index);
+	}
+
+	private void gBlur(Bitmap src, Bitmap dst) {
+		
+	    Allocation in = Allocation.createFromBitmap(mRS, src);
+	    Allocation out = Allocation.createTyped(mRS, alloc1.getType());
+	    
+	    mGaussianScript.set_gIn(in);
+	    mGaussianScript.set_gOut(out);
+	    mGaussianScript.set_gScript(mGaussianScript);
+	    
+	    mGaussianScript.invoke_filter();
+	    out.copyTo(dst);
 	}
 
 	Bitmap blur(Bitmap org, int radius) {
@@ -81,27 +94,30 @@ public class BlurEngine {
 	}
 
 	public Bitmap pictureDrawable2Bitmap(Picture picture) {
-		Bitmap bitmap = Bitmap.createBitmap(picture.getWidth(), picture.getHeight(), Config.ARGB_8888);
-		Canvas canvas = new Canvas(bitmap);
+		Bitmap src = Bitmap.createBitmap(picture.getWidth(), picture.getHeight(), Config.ARGB_8888);
+		Canvas canvas = new Canvas(src);
 		canvas.setDensity(DisplayMetrics.DENSITY_DEFAULT/2);
 		canvas.drawPicture(picture);
 		
-		bitmap = Bitmap.createScaledBitmap(bitmap, picture.getWidth()/2, picture.getHeight()/4, true);
-		bitmap = blur(bitmap, 5);
+		src = Bitmap.createScaledBitmap(src, picture.getWidth()/2, picture.getHeight()/4, true);
+		Bitmap dst = Bitmap.createBitmap(picture.getWidth(), picture.getHeight(), Config.ARGB_8888);
+		gBlur(src, dst);
+//		bitmap = blur(bitmap, 5);
 //		blurByRenderscript(bitmap, 5.f);
 //		blurfast(bitmap, 5);
-		return bitmap;
+		return dst;
 	}
 
-	private void blurByRenderscript(Bitmap source, float radius) {
-        final Allocation input = Allocation.createFromBitmap(mRS, source); //, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
-        final Allocation output = Allocation.createTyped(mRS, input.getType() );
-        final ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create(mRS, Element.U8_4( mRS ) );
-        script.setRadius( 3.f );
-        script.setInput(input);
-        script.forEach(output);
-        output.copyTo(source);
-	}
+//  // This functions is worked on API 17
+//	private void blurByRenderscript(Bitmap source, float radius) {
+//        final Allocation input = Allocation.createFromBitmap(mRS, source); //, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
+//        final Allocation output = Allocation.createTyped(mRS, input.getType() );
+//        final ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create(mRS, Element.U8_4( mRS ) );
+//        script.setRadius( 3.f );
+//        script.setInput(input);
+//        script.forEach(output);
+//        output.copyTo(source);
+//	}
 
 	public void blurfast(Bitmap bmp, int radius) {
 		int w = bmp.getWidth();
