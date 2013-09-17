@@ -96,10 +96,10 @@ public class BlurEngine {
 	public Bitmap picture2Bitmap(Picture picture) {
 		Bitmap src = Bitmap.createBitmap(picture.getWidth(), picture.getHeight(), Config.ARGB_8888);
 		Canvas canvas = new Canvas(src);
-		canvas.setDensity(DisplayMetrics.DENSITY_DEFAULT/2);
+		canvas.setDensity(DisplayMetrics.DENSITY_DEFAULT/8);
 		canvas.drawPicture(picture);
 		
-		src = Bitmap.createScaledBitmap(src, picture.getWidth()/2, picture.getHeight()/4, true);
+		src = Bitmap.createScaledBitmap(src, picture.getWidth()/8, picture.getHeight()/8, true);
 //		gBlur(src, dst);
 //		bitmap = blur(bitmap, 5);
 		blurByRenderscript(src, 5.f);
@@ -112,7 +112,7 @@ public class BlurEngine {
         final Allocation input = Allocation.createFromBitmap(mRS, src); //, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
         final Allocation output = Allocation.createTyped(mRS, input.getType() );
         final ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create(mRS, Element.U8_4( mRS ) );
-        script.setRadius( 3.f );
+        script.setRadius( radius );
         script.setInput(input);
         script.forEach(output);
         output.copyTo(src);

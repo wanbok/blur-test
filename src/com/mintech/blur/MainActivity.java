@@ -1,17 +1,13 @@
 package com.mintech.blur;
 
-import java.nio.channels.OverlappingFileLockException;
-
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Picture;
-import android.graphics.Point;
-import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ScaleDrawable;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
@@ -63,9 +59,6 @@ public class MainActivity extends Activity {
 		mBitmap = mBlurEngine.picture2Bitmap(mWebView.capturePicture());
 //		mBitmap = getBitmapForVisibleRegion(mWebView);
 		mBlurView.setImageBitmap(mBitmap);
-		
-		mBlurView.setScaleY(2.f);
-		mBlurView.setPivotY(0.f);
 		mBlurView.setBottom(mWebView.getHeight()); 
 		mBlurView.post(new Runnable() {
 			@Override
