@@ -109,7 +109,6 @@ public class MainActivity extends Activity {
 			@Override
 			public void onPageStarted(WebView view, String url, Bitmap facIcon) {
 				loadingFinished = false;
-				//SHOW LOADING IF IT ISNT ALREADY VISIBLE  
 			}
 
 			@Override

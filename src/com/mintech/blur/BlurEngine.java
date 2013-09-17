@@ -100,16 +100,15 @@ public class BlurEngine {
 		canvas.drawPicture(picture);
 		
 		src = Bitmap.createScaledBitmap(src, picture.getWidth()/2, picture.getHeight()/4, true);
-		Bitmap dst = Bitmap.createBitmap(picture.getWidth(), picture.getHeight(), Config.ARGB_8888);
 //		gBlur(src, dst);
 //		bitmap = blur(bitmap, 5);
-		blurByRenderscript(src, dst, 5.f);
+		blurByRenderscript(src, 5.f);
 //		blurfast(bitmap, 5);
 		return src;
 	}
 
 //  // This functions is worked on API 17
-	private void blurByRenderscript(Bitmap src, Bitmap dst, float radius) {
+	private void blurByRenderscript(Bitmap src, float radius) {
         final Allocation input = Allocation.createFromBitmap(mRS, src); //, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
         final Allocation output = Allocation.createTyped(mRS, input.getType() );
         final ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create(mRS, Element.U8_4( mRS ) );
