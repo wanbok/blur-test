@@ -31,7 +31,6 @@ public class MainActivity extends Activity {
 	private BlurView mBlurView;
 	private Bitmap mBitmap;
 	private BlurEngine mBlurEngine;
-	private CapturingPictureTask mTask;
 	
 	private String html = "<!DOCTYPE html><html>" +
 			"<head>" +
@@ -61,8 +60,8 @@ public class MainActivity extends Activity {
 	
 	private void captureWebView() {
 		mBlurView.setAlpha(1.f);
-//		mBitmap = mBlurEngine.pictureDrawable2Bitmap(mWebView.capturePicture());
-		mBitmap = getBitmapForVisibleRegion(mWebView);
+		mBitmap = mBlurEngine.picture2Bitmap(mWebView.capturePicture());
+//		mBitmap = getBitmapForVisibleRegion(mWebView);
 		mBlurView.setImageBitmap(mBitmap);
 		
 		mBlurView.setScaleY(2.f);
@@ -76,38 +75,6 @@ public class MainActivity extends Activity {
 		});
 	}
 	
-	class CapturingPictureTask extends AsyncTask<Void, Bitmap, Void> {
-
-		@Override
-		protected Void doInBackground(Void... params) {
-
-			while(!isCancelled()) {
-				publishProgress(getBitmapForVisibleRegion(mWebView));
-//				publishProgress(mBlurEngine.picture2Bitmap(mWebView.capturePicture()));
-			}
-			return null;
-
-		}
-
-		@Override
-		protected void onProgressUpdate(Bitmap... values) {
-			mBitmap = values[0];
-			mBlurView.setAlpha(1.f);
-			mBlurView.setImageBitmap(mBitmap);
-			
-			mBlurView.setScaleY(2.f);
-			mBlurView.setPivotY(0.f);
-			mBlurView.setBottom(mWebView.getHeight()); 
-			mBlurView.post(new Runnable() {
-				@Override
-				public void run() {
-					mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + mScrollView.getTop());
-				}
-			});
-		}
-		
-	}
-	
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -118,8 +85,6 @@ public class MainActivity extends Activity {
 		mContext = this;
 		
 		mBlurEngine = new BlurEngine(mContext);
-		
-		mTask = new CapturingPictureTask();
 		
 		mWebView = (MainWebView)findViewById(R.id.webview);
 		mWebView.getSettings().setJavaScriptEnabled(true);
@@ -154,7 +119,7 @@ public class MainActivity extends Activity {
 				}
 
 				if(loadingFinished && !redirect){
-//					captureWebView();
+					captureWebView();
 				} else{
 					redirect = false; 
 				}
@@ -173,14 +138,11 @@ public class MainActivity extends Activity {
 			public boolean onTouch(View v, MotionEvent event) {
 				float y = event.getRawY();
 				if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-//					captureWebView();
 					int top = mController.resizeHeightByDrag(oldY, y);
 					mScrollView.setLayoutParams(mController.getLayoutParams());
 					mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + top);
-				} else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-					mTask.execute();
-				} else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-					mTask.cancel(true);
+//				} else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+//				} else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
 				}
 				oldY = y;
 				return true;
