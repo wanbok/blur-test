@@ -2,6 +2,7 @@ package com.mintech.blur;
 
 import java.nio.channels.OverlappingFileLockException;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.annotation.SuppressLint;
@@ -30,6 +31,7 @@ public class MainActivity extends Activity {
 	private BlurView mBlurView;
 	private Bitmap mBitmap;
 	private BlurEngine mBlurEngine;
+	private CapturingPictureTask mTask;
 	
 	private String html = "<!DOCTYPE html><html>" +
 			"<head>" +
@@ -51,9 +53,59 @@ public class MainActivity extends Activity {
 	public Bitmap getBitmapForVisibleRegion(WebView webview) {
 	    Bitmap returnedBitmap = null;
 	    webview.setDrawingCacheEnabled(true);	    
-	    returnedBitmap = Bitmap.createBitmap(webview.getDrawingCache());
+//	    returnedBitmap = Bitmap.createBitmap(webview.getDrawingCache());
+	    returnedBitmap = Bitmap.createScaledBitmap(webview.getDrawingCache(true), webview.getWidth()/2, webview.getHeight()/4, true);
 	    webview.setDrawingCacheEnabled(false);
 	    return returnedBitmap;
+	}
+	
+	private void captureWebView() {
+		mBlurView.setAlpha(1.f);
+//		mBitmap = mBlurEngine.pictureDrawable2Bitmap(mWebView.capturePicture());
+		mBitmap = getBitmapForVisibleRegion(mWebView);
+		mBlurView.setImageBitmap(mBitmap);
+		
+		mBlurView.setScaleY(2.f);
+		mBlurView.setPivotY(0.f);
+		mBlurView.setBottom(mWebView.getHeight()); 
+		mBlurView.post(new Runnable() {
+			@Override
+			public void run() {
+				mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + mScrollView.getTop());
+			}
+		});
+	}
+	
+	class CapturingPictureTask extends AsyncTask<Void, Bitmap, Void> {
+
+		@Override
+		protected Void doInBackground(Void... params) {
+
+			while(!isCancelled()) {
+				publishProgress(getBitmapForVisibleRegion(mWebView));
+//				publishProgress(mBlurEngine.picture2Bitmap(mWebView.capturePicture()));
+			}
+			return null;
+
+		}
+
+		@Override
+		protected void onProgressUpdate(Bitmap... values) {
+			mBitmap = values[0];
+			mBlurView.setAlpha(1.f);
+			mBlurView.setImageBitmap(mBitmap);
+			
+			mBlurView.setScaleY(2.f);
+			mBlurView.setPivotY(0.f);
+			mBlurView.setBottom(mWebView.getHeight()); 
+			mBlurView.post(new Runnable() {
+				@Override
+				public void run() {
+					mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + mScrollView.getTop());
+				}
+			});
+		}
+		
 	}
 	
 	@SuppressLint("SetJavaScriptEnabled")
@@ -66,6 +118,8 @@ public class MainActivity extends Activity {
 		mContext = this;
 		
 		mBlurEngine = new BlurEngine(mContext);
+		
+		mTask = new CapturingPictureTask();
 		
 		mWebView = (MainWebView)findViewById(R.id.webview);
 		mWebView.getSettings().setJavaScriptEnabled(true);
@@ -100,21 +154,7 @@ public class MainActivity extends Activity {
 				}
 
 				if(loadingFinished && !redirect){
-					//HIDE LOADING IT HAS FINISHED
-					mBlurView.setAlpha(1.f);
-					mBitmap = mBlurEngine.pictureDrawable2Bitmap(mWebView.capturePicture());
-					mBlurView.setImageBitmap(mBitmap);
-					
-					mBlurView.setScaleY(2.f);
-					mBlurView.setPivotY(0.f);
-					mBlurView.setBottom(mWebView.getHeight()); 
-//					mScrollView.getChildVisibleRect(mBlurView, new Rect(0, 0, mWebView.getWidth(), mWebView.getHeight()), new Point(0, 0));
-					mBlurView.post(new Runnable() {
-						@Override
-						public void run() {
-							mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + mScrollView.getTop());
-						}
-					});
+//					captureWebView();
 				} else{
 					redirect = false; 
 				}
@@ -133,10 +173,14 @@ public class MainActivity extends Activity {
 			public boolean onTouch(View v, MotionEvent event) {
 				float y = event.getRawY();
 				if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+//					captureWebView();
 					int top = mController.resizeHeightByDrag(oldY, y);
 					mScrollView.setLayoutParams(mController.getLayoutParams());
 					mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + top);
-//				} else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+				} else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+					mTask.execute();
+				} else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+					mTask.cancel(true);
 				}
 				oldY = y;
 				return true;
