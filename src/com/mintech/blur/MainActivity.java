@@ -83,17 +83,16 @@ public class MainActivity extends Activity {
 			"</body>" +
 			"</html>";
 	
-	public class WebAppInterface {
-	    Context mContext;
-
-	    /** Instantiate the interface and set the context */
-	    WebAppInterface(Context c) {
-	        mContext = c;
-	    }
-
+	class WebAppInterface {
 	    @JavascriptInterface
-	    public void complateToLoad() {
-	        captureWebView();
+	    public void completeToLoad() {
+	    	mHandler.post(new Runnable() {
+				
+				@Override
+				public void run() {
+			        captureWebView();
+				}
+			});
 	    }
 	}
 	
@@ -135,7 +134,7 @@ public class MainActivity extends Activity {
 		
 		mWebView = (MainWebView)findViewById(R.id.webview);
 		mWebView.getSettings().setJavaScriptEnabled(true);
-		mWebView.addJavascriptInterface(new WebAppInterface(this), "Android");
+		mWebView.addJavascriptInterface(new WebAppInterface(), "Android");
 		mWebView.loadDataWithBaseURL("file:///android_asset/", htmlCountdownPreloader, "text/html", "UTF-8", "");
 		mWebView.setWebChromeClient(new WebChromeClient());
 

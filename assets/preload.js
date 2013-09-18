@@ -69,7 +69,7 @@ $(document).ready(function () {
     		$('#loaderMask').html('<span>100%</span>');
     		$('#loaderMask').fadeOut(function(){
     			$('#loaderMask').remove();
-    			Android.complateToLoad("");
+    			Android.completeToLoad();
     		});
     	}
     }
@@ -78,7 +78,7 @@ $(document).ready(function () {
     function imgError (arg) {
     	$('#loaderMask').html("Image failed to load.. Loader quitting..").delay(3000).fadeOut(1000, function(){
     		$('#loaderMask').remove();
-			Android.complateToLoad("");
+			Android.completeToLoad();
     	})
     }
 
