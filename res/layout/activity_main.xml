@@ -33,5 +33,14 @@
         android:layout_alignParentBottom="true"
         android:alpha="0.5"
         android:background="@android:color/background_dark" />
+    
+    <TextView 
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="0%"
+        android:textSize="60sp"
+        android:background="#FFF" />
 
 </RelativeLayout>

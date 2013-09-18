@@ -13,11 +13,15 @@ import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	
@@ -25,6 +29,7 @@ public class MainActivity extends Activity {
 	private Context mContext;
 	private Handler mHandler;
 	private MainWebView mWebView;
+	private TextView mTextView;
 	private ControllerView mController;
 	private ScrollView mScrollView;
 	private BlurView mBlurView;
@@ -58,16 +63,6 @@ public class MainActivity extends Activity {
 				"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=5.0\">" +
 				"<script src='http://code.jquery.com/jquery-1.10.1.min.js'></script>" +
 				"<script src='file:///android_asset/preload.js'></script>" +
-				"<style type='text/css'>" +
-					"#loaderMask{" +
-						"text-align: center;" +
-						"padding-top: 20%;" +
-					"}" +
-					"#loaderMask span{" +
-						"font-size: 5em;" +
-					"}" +
-					"img { display: block; }" +
-				"</style>" +
 			"</head>" +
 			"<body>" +
 				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_001.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
@@ -91,8 +86,37 @@ public class MainActivity extends Activity {
 				@Override
 				public void run() {
 			        captureWebView();
+			        Animation fadeOut = new AlphaAnimation(1, 0);
+			        fadeOut.setInterpolator(new AccelerateInterpolator()); //and this
+			        fadeOut.setStartOffset(1000);
+			        fadeOut.setDuration(1000);
+			        mTextView.setAnimation(fadeOut);
+			        mTextView.setVisibility(View.INVISIBLE);
+			        mTextView.animate();
 				}
 			});
+	    }
+
+	    @JavascriptInterface
+	    public void drawPercentage(final String percentage) {
+
+	    	mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					mTextView.setText(percentage);
+				}
+	    	});
+	    }
+
+	    @JavascriptInterface
+	    public void failToLoad() {
+
+	    	mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					
+				}
+	    	});
 	    }
 	}
 	
@@ -131,6 +155,8 @@ public class MainActivity extends Activity {
 		mHandler = new Handler();
 		
 		mBlurEngine = new BlurEngine(mContext);
+		
+		mTextView = (TextView)findViewById(R.id.textView);
 		
 		mWebView = (MainWebView)findViewById(R.id.webview);
 		mWebView.getSettings().setJavaScriptEnabled(true);

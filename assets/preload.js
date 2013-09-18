@@ -23,16 +23,6 @@ $(document).ready(function () {
     
     var bgImg = [], img = [], count=0, percentage = 0;
 
-    //Creating loader overlay
-    $('<div id="loaderMask"><span>0%</span></div>').css({
-    	position:"fixed",
-    	top:0,
-    	bottom:0,
-    	left:0,
-    	right:0,
-    	background:'#fff'
-    }).appendTo('body');
-
     //Searching all elemnts in the page for image
     $('*').filter(function() {
 
@@ -64,22 +54,16 @@ $(document).ready(function () {
     function completeImageLoading(){
     	count++;
     	percentage = Math.floor(count / imgArray.length * 100);
-    	$('#loaderMask').html('<span>'+percentage + '%'+'</span>');
+    	Android.drawPercentage(percentage + '%');
     	if(percentage === 100){
-    		$('#loaderMask').html('<span>100%</span>');
-    		$('#loaderMask').fadeOut(function(){
-    			$('#loaderMask').remove();
-    			Android.completeToLoad();
-    		});
+			Android.completeToLoad();
     	}
     }
 
     //Error handling
     function imgError (arg) {
-    	$('#loaderMask').html("Image failed to load.. Loader quitting..").delay(3000).fadeOut(1000, function(){
-    		$('#loaderMask').remove();
-			Android.completeToLoad();
-    	})
+    	Android.failToLoad();
+		//Android.completeToLoad();
     }
 
 });
