@@ -79,10 +79,23 @@ public class MainActivity extends Activity {
 			"</html>";
 	
 	class WebAppInterface {
+		
+	    @JavascriptInterface
+	    public void startToLoad() {
+	    	mHandler.post(new Runnable() {
+
+				@Override
+				public void run() {
+			        if (!mTextView.isShown()) mTextView.setVisibility(View.VISIBLE);
+					mTextView.setText("0%");
+				}
+	    		
+	    	});
+	    }
+	    
 	    @JavascriptInterface
 	    public void completeToLoad() {
-	    	mHandler.post(new Runnable() {
-				
+	    	mHandler.postDelayed(new Runnable() {
 				@Override
 				public void run() {
 			        captureWebView();
@@ -94,7 +107,7 @@ public class MainActivity extends Activity {
 			        mTextView.setVisibility(View.INVISIBLE);
 			        mTextView.animate();
 				}
-			});
+			}, 100);
 	    }
 
 	    @JavascriptInterface
@@ -114,7 +127,7 @@ public class MainActivity extends Activity {
 	    	mHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					
+					// TODO: 로딩 실패시 처리
 				}
 	    	});
 	    }
@@ -163,40 +176,6 @@ public class MainActivity extends Activity {
 		mWebView.addJavascriptInterface(new WebAppInterface(), "Android");
 		mWebView.loadDataWithBaseURL("file:///android_asset/", htmlCountdownPreloader, "text/html", "UTF-8", "");
 		mWebView.setWebChromeClient(new WebChromeClient());
-
-		mWebView.setWebViewClient(new WebViewClient() {
-			boolean loadingFinished = true;
-			boolean redirect = false;
-			
-			@Override
-			public boolean shouldOverrideUrlLoading(WebView view, String urlNewString) {
-				if (!loadingFinished) {
-					redirect = true;
-				}
-
-				loadingFinished = false;
-				view.loadUrl(urlNewString);
-				return true;
-			}
-
-			@Override
-			public void onPageStarted(WebView view, String url, Bitmap facIcon) {
-				loadingFinished = false;
-			}
-
-			@Override
-			public void onPageFinished(WebView view, String url) {
-				if(!redirect){
-					loadingFinished = true;
-				}
-
-				if(loadingFinished && !redirect){
-//					captureWebView();
-				} else{
-					redirect = false; 
-				}
-			}
-		});
 		
 		mScrollView = (ScrollView) findViewById(R.id.scrollView);
 		mWebView.setDelegateScrollView(mScrollView);

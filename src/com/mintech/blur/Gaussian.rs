@@ -14,7 +14,7 @@ float mOffset[5] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
 float mWeight[5] = {0.2270270270f, 0.1945945946f, 0.1216216216f, 0.0540540541f, 0.0162162162f};
 
 // Number of passes to apply the blur effect for.
-int passes = 1;
+int passes = 4;
 
 // The scale factor for the sampling offsets.
 int factor = 1;
@@ -42,20 +42,20 @@ uint32_t width;
  */
 void root(const uchar4 *v_in, uchar4 *v_out, const void *usrData, uint32_t x, uint32_t y) {
 	int blurSteps = 5;
-	float colour_multipier = 0.45f;
-	float3 pixel_colour = rsUnpackColor8888(*v_in).rgb * mWeight[0];
+	float colour_multipier = 0.5f;
+	float4 pixel_colour = rsUnpackColor8888(*v_in) * mWeight[0];
 
 	// Horizontal blur
 	for (int i = 1; i < blurSteps; i++) {
 		// Forward
 		if(x + mOffset[i] * factor < width) {
 			const uchar4 *neighbourHorizontalForward = rsGetElementAt(gIn, x + mOffset[i] * factor, y);
-			pixel_colour += rsUnpackColor8888(*neighbourHorizontalForward).rgb * mWeight[i] * colour_multipier;
+			pixel_colour += rsUnpackColor8888(*neighbourHorizontalForward) * mWeight[i] * colour_multipier;
 		}
 		// Backward
 		if(x - mOffset[i] * factor >= 0) {
 			const uchar4 *neighbourHorizontalBackward = rsGetElementAt(gIn, x - mOffset[i] * factor, y);
-			pixel_colour +=  rsUnpackColor8888(*neighbourHorizontalBackward).rgb * mWeight[i] * colour_multipier;
+			pixel_colour +=  rsUnpackColor8888(*neighbourHorizontalBackward) * mWeight[i] * colour_multipier;
 		}
 	}
 
@@ -64,13 +64,13 @@ void root(const uchar4 *v_in, uchar4 *v_out, const void *usrData, uint32_t x, ui
 		// UP
 		if(y - mOffset[k] * factor >= 0) {
 			const uchar4 *neighbourVerticalUp = rsGetElementAt(gIn, x, y - mOffset[k] * factor);
-			pixel_colour += rsUnpackColor8888(*neighbourVerticalUp).rgb * mWeight[k] * colour_multipier;
+			pixel_colour += rsUnpackColor8888(*neighbourVerticalUp) * mWeight[k] * colour_multipier;
 		}
 
 		// Down
 		if(y + mOffset[k] * factor < height) {
 			const uchar4 *neighbourVerticalDown = rsGetElementAt(gIn, x, y + mOffset[k] * factor);
-			pixel_colour += rsUnpackColor8888(*neighbourVerticalDown).rgb * mWeight[k] * colour_multipier;
+			pixel_colour += rsUnpackColor8888(*neighbourVerticalDown) * mWeight[k] * colour_multipier;
 		}
 	}
 
@@ -79,8 +79,8 @@ void root(const uchar4 *v_in, uchar4 *v_out, const void *usrData, uint32_t x, ui
 }
 
 void filter() {
-	height = rsAllocationGetDimY(gIn);
 	width = rsAllocationGetDimX(gIn);
+	height = rsAllocationGetDimY(gIn);
 
 	rsForEach(gScript, gIn, gOut);
 	for(int i = 0; i < passes-1; i++) {

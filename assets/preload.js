@@ -20,6 +20,8 @@ $(document).ready(function () {
 	    return -1;
 	  };
 	}
+	
+	Android.startToLoad();
     
     var bgImg = [], img = [], count=0, percentage = 0;
 
