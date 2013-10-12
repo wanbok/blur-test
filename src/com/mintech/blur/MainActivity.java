@@ -1,125 +1,32 @@
 package com.mintech.blur;
 
+import org.apache.http.util.EncodingUtils;
+
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.StrictMode;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
-import android.widget.ScrollView;
-import android.widget.TextView;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
 	
 	public static final String TAG = "MainActivity";
-	private Context mContext;
-	private Handler mHandler;
+	private static final String URL = "http://mintshop.com/api/products/115310";
+	private static final String HTML = "<!DOCTYPE html><html> <head> <meta name='viewport' content='width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=5.0'> <script src='http://mintshop.com/lazy_loader.js'></script> <style>img { display: block; } </style> </head>" +
+			"<body> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518712/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518712/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518712/mintshop_0003.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518712/mintshop_0004.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518713/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518713/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518713/mintshop_0003.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518714/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518714/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518715/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518715/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518716/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518716/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518717/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518717/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518718/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518718/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518719/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518719/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518720/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518720/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518720/mintshop_0003.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518721/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518721/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518722/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518722/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518723/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518723/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518724/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518724/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518725/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518725/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518726/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518726/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518727/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518727/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518727/mintshop_0003.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518728/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518728/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518729/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518729/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518730/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518730/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518730/mintshop_0003.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518731/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518731/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518732/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518732/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518733/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518733/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518734/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518734/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518735/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518735/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518735/mintshop_0003.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518736/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518736/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518736/mintshop_0003.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518737/mintshop_0001.JPEG' width='100%' style='min-height: 1000px;'> <img lazy_src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/CroppedImage/WebImage/518737/mintshop_0002.JPEG' width='100%' style='min-height: 1000px;'> </body></html>";
+	private static final String URL_FOR_BLUR = "http://192.168.0.8:3000/capture";
+//	private static final String PARAMS_FOR_BLUR = "product=115310&html="+HTML;
+	private static final String PARAMS_FOR_BLUR = "product=115310&width=591";
 	private MainWebView mWebView;
-	private TextView mTextView;
 	private ControllerView mController;
-	private ScrollView mScrollView;
-	private BlurView mBlurView;
-	private Bitmap mBitmap;
-	private BlurEngine mBlurEngine;
-	
-	private String htmlCountdownPreloader = "<!DOCTYPE html>" +
-			"<html>" +
-			"<head>" +
-				"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=5.0\">" +
-				"<script src='http://code.jquery.com/jquery-1.10.1.min.js'></script>" +
-				"<script src='file:///android_asset/preload.js'></script>" +
-			"</head>" +
-			"<body>" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_001.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_002.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_003.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_004.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_001.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_002.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_003.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_004.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_005.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47374/mintshop_001.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-			"</body>" +
-			"</html>";
-	
-	class WebAppInterface {
-		
-	    @JavascriptInterface
-	    public void startToLoad() {
-	    	mHandler.post(new Runnable() {
-
-				@Override
-				public void run() {
-			        if (!mTextView.isShown()) mTextView.setVisibility(View.VISIBLE);
-					mTextView.setText("0%");
-				}
-	    		
-	    	});
-	    }
-	    
-	    @JavascriptInterface
-	    public void completeToLoad() {
-	    	mHandler.postDelayed(new Runnable() {
-				@Override
-				public void run() {
-			        captureWebView();
-			        Animation fadeOut = new AlphaAnimation(1, 0);
-			        fadeOut.setInterpolator(new AccelerateInterpolator()); //and this
-			        fadeOut.setStartOffset(1000);
-			        fadeOut.setDuration(1000);
-			        mTextView.setAnimation(fadeOut);
-			        mTextView.setVisibility(View.INVISIBLE);
-			        mTextView.animate();
-				}
-			}, 100);
-	    }
-
-	    @JavascriptInterface
-	    public void drawPercentage(final String percentage) {
-
-	    	mHandler.post(new Runnable() {
-				@Override
-				public void run() {
-					mTextView.setText(percentage);
-				}
-	    	});
-	    }
-
-	    @JavascriptInterface
-	    public void failToLoad() {
-
-	    	mHandler.post(new Runnable() {
-				@Override
-				public void run() {
-					// TODO: 로딩 실패시 처리
-				}
-	    	});
-	    }
-	}
-	
-	public void captureWebView() {
-		mBlurView.setAlpha(1.f);
-		mBitmap = mBlurEngine.picture2Bitmap(mWebView.capturePicture());
-		mBlurView.setImageBitmap(mBitmap);
-		mBlurView.setBottom(mWebView.getHeight()); 
-		mBlurView.post(new Runnable() {
-			@Override
-			public void run() {
-				mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + mScrollView.getTop());
-			}
-		});
-	}
+	private WebView mBlurView;
 	
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
@@ -128,23 +35,20 @@ public class MainActivity extends Activity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 		setContentView(R.layout.activity_main);
-		mContext = this;
 		
-		mHandler = new Handler();
-		
-		mBlurEngine = new BlurEngine(mContext);
-		
-		mTextView = (TextView)findViewById(R.id.textView);
+//		mTextView = (TextView)findViewById(R.id.textView);
 		
 		mWebView = (MainWebView)findViewById(R.id.webview);
 		mWebView.getSettings().setJavaScriptEnabled(true);
-		mWebView.addJavascriptInterface(new WebAppInterface(), "Android");
-		mWebView.loadDataWithBaseURL("file:///android_asset/", htmlCountdownPreloader, "text/html", "UTF-8", "");
+		mWebView.loadData(HTML, "text/html", null);
 		mWebView.setWebChromeClient(new WebChromeClient());
+
+		mBlurView = (WebView) findViewById(R.id.blurView);
+		mBlurView.getSettings().setJavaScriptEnabled(true);
+		mBlurView.postUrl(URL_FOR_BLUR, EncodingUtils.getBytes(PARAMS_FOR_BLUR, "BASE64"));
+		mBlurView.setWebChromeClient(new WebChromeClient());
 		
-		mScrollView = (ScrollView) findViewById(R.id.scrollView);
-		mWebView.setDelegateScrollView(mScrollView);
-		mBlurView = (BlurView) findViewById(R.id.blurView);
+		mWebView.setDelegateScrollView(mBlurView);
 		
 		mController = (ControllerView) findViewById(R.id.controller);
 		mController.setReferenceView(mWebView);
@@ -155,8 +59,8 @@ public class MainActivity extends Activity {
 				float y = event.getRawY();
 				if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
 					int top = mController.resizeHeightByDrag(oldY, y);
-					mScrollView.setLayoutParams(mController.getLayoutParams());
-					mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + top);
+					mBlurView.setLayoutParams(mController.getLayoutParams());
+					mBlurView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + top);
 				}
 				oldY = y;
 				return true;
