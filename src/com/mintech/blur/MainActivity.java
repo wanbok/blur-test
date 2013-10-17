@@ -28,6 +28,8 @@ public class MainActivity extends Activity {
 	private MainWebView mWebView;
 	private ControllerView mController;
 	private WebView mBlurView;
+	private Boolean isWebViewLoaded = false;
+	private Boolean isBlurViewLoaded = false;
 	
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
@@ -43,6 +45,45 @@ public class MainActivity extends Activity {
 		mWebView.getSettings().setJavaScriptEnabled(true);
 		mWebView.loadData(HTML, "text/html", null);
 		mWebView.setWebChromeClient(new WebChromeClient());
+		mWebView.setWebViewClient(new WebViewClient() {
+			boolean loadingFinished = true;
+			boolean redirect = false;
+
+			@Override
+			public boolean shouldOverrideUrlLoading(WebView view, String urlNewString) {
+				if (!loadingFinished) {
+					redirect = true;
+				}
+
+				loadingFinished = false;
+				view.loadUrl(urlNewString);
+				return true;
+			}
+
+			@Override
+			public void onPageStarted(WebView view, String url, Bitmap facIcon) {
+				loadingFinished = false; 
+			}
+
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				if(!redirect){
+					loadingFinished = true;
+				}
+
+				if(loadingFinished && !redirect){
+					mBlurView.postDelayed(new Runnable() {
+						
+						@Override
+						public void run() {
+							syncBlurViewScroll(mWebView.getScrollX(), mWebView.getScrollY(), mController.getTop());							
+						}
+					}, 500);
+				} else{
+					redirect = false; 
+				}
+			}
+		});
 
 		mBlurView = (WebView) findViewById(R.id.blurView);
 		mBlurView.getSettings().setJavaScriptEnabled(true);
@@ -75,13 +116,13 @@ public class MainActivity extends Activity {
 				}
 
 				if(loadingFinished && !redirect){
-					mBlurView.post(new Runnable() {
+					mBlurView.postDelayed(new Runnable() {
+						
 						@Override
 						public void run() {
-							mBlurView.setLayoutParams(mController.getLayoutParams());
-							mBlurView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + mController.getTop());
+							syncBlurViewScroll(mWebView.getScrollX(), mWebView.getScrollY(), mController.getTop());							
 						}
-					});
+					}, 500);
 				} else{
 					redirect = false; 
 				}
@@ -99,8 +140,7 @@ public class MainActivity extends Activity {
 				float y = event.getRawY();
 				if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
 					int top = mController.resizeHeightByDrag(oldY, y);
-					mBlurView.setLayoutParams(mController.getLayoutParams());
-					mBlurView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + top);
+					syncBlurViewScroll(mWebView.getScrollX(), mWebView.getScrollY(), top);
 				}
 				oldY = y;
 				return true;
@@ -112,5 +152,10 @@ public class MainActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+	
+	private void syncBlurViewScroll(int x, int y, int top) {
+		mBlurView.setLayoutParams(mController.getLayoutParams());
+		mBlurView.scrollTo(x, y + top);
 	}
 }
