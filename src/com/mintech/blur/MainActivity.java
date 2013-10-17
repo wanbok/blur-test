@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
@@ -48,14 +49,43 @@ public class MainActivity extends Activity {
 		mBlurView.postUrl(URL_FOR_BLUR, EncodingUtils.getBytes(PARAMS_FOR_BLUR, "BASE64"));
 		mBlurView.setWebChromeClient(new WebChromeClient());
 		mBlurView.setWebViewClient(new WebViewClient() {
+			boolean loadingFinished = true;
+			boolean redirect = false;
+
+			@Override
+			public boolean shouldOverrideUrlLoading(WebView view, String urlNewString) {
+				if (!loadingFinished) {
+					redirect = true;
+				}
+
+				loadingFinished = false;
+				view.loadUrl(urlNewString);
+				return true;
+			}
+
+			@Override
+			public void onPageStarted(WebView view, String url, Bitmap facIcon) {
+				loadingFinished = false; 
+			}
 
 			@Override
 			public void onPageFinished(WebView view, String url) {
-				super.onPageFinished(view, url);
-				mBlurView.setLayoutParams(mController.getLayoutParams());
-				mBlurView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY());
+				if(!redirect){
+					loadingFinished = true;
+				}
+
+				if(loadingFinished && !redirect){
+					mBlurView.post(new Runnable() {
+						@Override
+						public void run() {
+							mBlurView.setLayoutParams(mController.getLayoutParams());
+							mBlurView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + mController.getTop());
+						}
+					});
+				} else{
+					redirect = false; 
+				}
 			}
-			
 		});
 		
 		mWebView.setDelegateScrollView(mBlurView);
