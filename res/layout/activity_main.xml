@@ -10,20 +10,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <ScrollView
-        android:id="@+id/scrollView"
+    <WebView
+        android:id="@+id/blurView"
         android:scrollbars="none"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:layout_alignParentBottom="true" >
-
-        <com.mintech.blur.BlurView
-            android:id="@+id/blurView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:alpha="0.0"
-            android:background="#000" />
-    </ScrollView>
+        android:layout_alignParentBottom="true" />
 
     <com.mintech.blur.ControllerView
         android:id="@+id/controller"
