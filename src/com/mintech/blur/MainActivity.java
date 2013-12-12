@@ -20,12 +20,10 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 
@@ -150,13 +148,13 @@ public class MainActivity extends Activity {
 								int width = Integer.parseInt(jObj.getString(WIDTH_KEY));
 								int height = Integer.parseInt(jObj.getString(HEIGHT_KEY));
 								LinearLayout.LayoutParams Params = new LinearLayout.LayoutParams(width, height);
-								ImageView imageView = new ImageView(MainActivity.this);
+								ScaledImageView imageView = new ScaledImageView(MainActivity.this);
 								imageView.setScaleType(ScaleType.FIT_CENTER);
 								imageView.setLayoutParams(Params);
 
 								mainLinearLayout.addView(imageView);
 
-								ImageView bluredImageView = new ImageView(MainActivity.this);
+								ScaledImageView bluredImageView = new ScaledImageView(MainActivity.this);
 								bluredImageView.setScaleType(ScaleType.FIT_CENTER);
 								bluredImageView.setLayoutParams(Params);
 								bluredLinearLayout.addView(bluredImageView);
@@ -188,7 +186,7 @@ public class MainActivity extends Activity {
 
 										LinearLayout mainLinearLayout = (LinearLayout) findViewById(R.id.mainScrollLinearLayout);
 										Bitmap bitmap = mBitmapList.get(index);
-										ImageView imageView = (ImageView)mainLinearLayout.getChildAt(index);
+										ScaledImageView imageView = (ScaledImageView)mainLinearLayout.getChildAt(index);
 
 										// set the Drawable on the ImageView
 										imageView.setImageBitmap(bitmap);
@@ -214,7 +212,7 @@ public class MainActivity extends Activity {
 											public void run() {
 												LinearLayout bluredLinearLayout = (LinearLayout) findViewById(R.id.bluredScrollLinearLayout);
 												Bitmap bluredBitmap = mBluredBitmapList.get(index);
-												ImageView bluredImageView = (ImageView)bluredLinearLayout.getChildAt(index);
+												ScaledImageView bluredImageView = (ScaledImageView)bluredLinearLayout.getChildAt(index);
 
 												// set the Drawable on the ImageView
 												bluredImageView.setImageBitmap(bluredBitmap);

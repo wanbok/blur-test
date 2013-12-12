@@ -8,27 +8,37 @@
     <com.mintech.blur.MainScrollView
         android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <LinearLayout
-            android:id="@+id/mainScrollLinearLayout"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        android:layout_height="match_parent" >
+
+        <com.mintech.blur.HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" >
+
+            <LinearLayout
+                android:id="@+id/mainScrollLinearLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </com.mintech.blur.HorizontalScrollView>
     </com.mintech.blur.MainScrollView>
 
     <com.mintech.blur.BluredScrollView
         android:id="@+id/bluredScrollView"
-        android:scrollbars="none"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:layout_alignParentBottom="true">
-        
-        <LinearLayout
-            android:id="@+id/bluredScrollLinearLayout"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        
+        android:layout_alignParentBottom="true"
+        android:scrollbars="none" >
+
+        <HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" >
+
+            <LinearLayout
+                android:id="@+id/bluredScrollLinearLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </HorizontalScrollView>
     </com.mintech.blur.BluredScrollView>
 
     <com.mintech.blur.ControllerView
