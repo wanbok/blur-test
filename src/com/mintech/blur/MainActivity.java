@@ -1,153 +1,73 @@
 package com.mintech.blur;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebChromeClient;
-import android.widget.ScrollView;
-import android.widget.TextView;
+import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
 
 public class MainActivity extends Activity {
-	
+
 	public static final String TAG = "MainActivity";
-	private Context mContext;
-	private Handler mHandler;
-	private MainWebView mWebView;
-	private TextView mTextView;
+	private static final String URL = "http://mintshop.com/api/products/115310";
+	private static final String WEB_IMAGES_KEY = "web_images";
+	private static final String ID_KEY = "id";
+	private static final String RAW_CROPPED_IMAGES_KEY = "raw_cropped_images";
+	private static final String URL_KEY = "url";
+	private static final String WIDTH_KEY = "width";
+	private static final String HEIGHT_KEY = "height";
+	private ArrayList<JSONObject> mOrderedImageUrlList;
+	private ArrayList<Bitmap> mBitmapList;
+	private ArrayList<Bitmap> mBluredBitmapList;
+	private ArrayList<Integer> mAccumulatedHeight;
 	private ControllerView mController;
-	private ScrollView mScrollView;
-	private BlurView mBlurView;
-	private Bitmap mBitmap;
-	private BlurEngine mBlurEngine;
+	private MainScrollView mMainScrollView;
+	private BluredScrollView mBluredScrollView;
 	
-	private String htmlCountdownPreloader = "<!DOCTYPE html>" +
-			"<html>" +
-			"<head>" +
-				"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=5.0\">" +
-				"<script src='http://code.jquery.com/jquery-1.10.1.min.js'></script>" +
-				"<script src='file:///android_asset/preload.js'></script>" +
-			"</head>" +
-			"<body>" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_001.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_002.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_003.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47372/mintshop_004.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_001.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_002.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_003.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_004.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47373/mintshop_005.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-				"<img src='https://ssproxy.ucloudbiz.olleh.com/v1/AUTH_f46e842e-c688-460e-a70b-e6a4d30e9885/mintshopimage/production/CroppedImage/WebImage/47374/mintshop_001.JPEG' width=\"100%\" style=\"min-height: 1000px;\">" +
-			"</body>" +
-			"</html>";
-	
-	class WebAppInterface {
-		
-	    @JavascriptInterface
-	    public void startToLoad() {
-	    	mHandler.post(new Runnable() {
+	private RenderScript rs;
 
-				@Override
-				public void run() {
-			        if (!mTextView.isShown()) mTextView.setVisibility(View.VISIBLE);
-					mTextView.setText("0%");
-				}
-	    		
-	    	});
-	    }
-	    
-	    @JavascriptInterface
-	    public void completeToLoad() {
-	    	mHandler.postDelayed(new Runnable() {
-				@Override
-				public void run() {
-			        captureWebView();
-			        Animation fadeOut = new AlphaAnimation(1, 0);
-			        fadeOut.setInterpolator(new AccelerateInterpolator()); //and this
-			        fadeOut.setStartOffset(1000);
-			        fadeOut.setDuration(1000);
-			        mTextView.setAnimation(fadeOut);
-			        mTextView.setVisibility(View.INVISIBLE);
-			        mTextView.animate();
-				}
-			}, 100);
-	    }
+	private Handler mHandler;
 
-	    @JavascriptInterface
-	    public void drawPercentage(final String percentage) {
-
-	    	mHandler.post(new Runnable() {
-				@Override
-				public void run() {
-					mTextView.setText(percentage);
-				}
-	    	});
-	    }
-
-	    @JavascriptInterface
-	    public void failToLoad() {
-
-	    	mHandler.post(new Runnable() {
-				@Override
-				public void run() {
-					// TODO: 로딩 실패시 처리
-				}
-	    	});
-	    }
-	}
-	
-	public void captureWebView() {
-		mBlurView.setAlpha(1.f);
-		mBitmap = mBlurEngine.picture2Bitmap(mWebView.capturePicture());
-		mBlurView.setImageBitmap(mBitmap);
-		mBlurView.setBottom(mWebView.getHeight()); 
-		mBlurView.post(new Runnable() {
-			@Override
-			public void run() {
-				mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + mScrollView.getTop());
-			}
-		});
-	}
-	
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
+		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+		StrictMode.setThreadPolicy(policy);
 		setContentView(R.layout.activity_main);
-		mContext = this;
-		
+
 		mHandler = new Handler();
 		
-		mBlurEngine = new BlurEngine(mContext);
-		
-		mTextView = (TextView)findViewById(R.id.textView);
-		
-		mWebView = (MainWebView)findViewById(R.id.webview);
-		mWebView.getSettings().setJavaScriptEnabled(true);
-		mWebView.addJavascriptInterface(new WebAppInterface(), "Android");
-		mWebView.loadDataWithBaseURL("file:///android_asset/", htmlCountdownPreloader, "text/html", "UTF-8", "");
-		mWebView.setWebChromeClient(new WebChromeClient());
-		
-		mScrollView = (ScrollView) findViewById(R.id.scrollView);
-		mWebView.setDelegateScrollView(mScrollView);
-		mBlurView = (BlurView) findViewById(R.id.blurView);
-		
+		rs = RenderScript.create(getApplicationContext());
+
+		mMainScrollView = (MainScrollView) findViewById(R.id.mainScrollView);
+		mBluredScrollView = (BluredScrollView) findViewById(R.id.bluredScrollView);
+
+		mMainScrollView.setDelegateScrollView(mBluredScrollView);
+
 		mController = (ControllerView) findViewById(R.id.controller);
-		mController.setReferenceView(mWebView);
+		mController.setReferenceView(mMainScrollView);
 		mController.setOnTouchListener(new OnTouchListener() {
 			private float oldY = 0.f;
 			@Override
@@ -155,13 +75,14 @@ public class MainActivity extends Activity {
 				float y = event.getRawY();
 				if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
 					int top = mController.resizeHeightByDrag(oldY, y);
-					mScrollView.setLayoutParams(mController.getLayoutParams());
-					mScrollView.scrollTo(mWebView.getScrollX(), mWebView.getScrollY() + top);
+					syncBlurViewScroll(mMainScrollView.getScrollX(), mMainScrollView.getScrollY(), top);
 				}
 				oldY = y;
 				return true;
 			}
 		});
+
+		new JSONParse().execute();
 	}
 
 	@Override
@@ -169,4 +90,206 @@ public class MainActivity extends Activity {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
+
+	private void syncBlurViewScroll(int x, int y, int top) {
+		mBluredScrollView.setLayoutParams(mController.getLayoutParams());
+		mBluredScrollView.scrollTo(x, y + top);
+	}
+
+	private class JSONParse extends AsyncTask<String, String, JSONObject> {
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+		}
+
+		@Override
+		protected JSONObject doInBackground(String... args) {
+			JSONParser jParser = new JSONParser();
+
+			// Getting JSON from URL
+			JSONObject json = jParser.getJSONFromUrl(MainActivity.URL);
+			return json;
+		}
+		@Override
+		protected void onPostExecute(JSONObject json) {
+			try {
+				// Getting JSON Array
+				JSONArray webImages = json.getJSONArray(WEB_IMAGES_KEY);
+
+				// Change JSONArray to ArrayList. Because JSONArray can't be sorted. 
+				ArrayList<JSONObject> list = CommonUtil.sortedListFromJSONArray(webImages, ID_KEY);
+
+				mOrderedImageUrlList = new ArrayList<JSONObject>();
+				mAccumulatedHeight = new ArrayList<Integer>();
+				for (int i = 0; i < list.size(); i++) {
+					JSONObject jsonObject = list.get(i);
+					JSONArray jsonArray = jsonObject.getJSONArray(RAW_CROPPED_IMAGES_KEY);
+					ArrayList<JSONObject> listForUrl = CommonUtil.sortedListFromJSONArray(jsonArray, URL_KEY);
+					Integer accumulatedHeight = 0;
+					for (int j = 0; j < listForUrl.size(); j++) {
+						JSONObject jObj = listForUrl.get(j);
+						mOrderedImageUrlList.add(jObj);
+						accumulatedHeight += Integer.parseInt(jObj.getString(HEIGHT_KEY));
+						mAccumulatedHeight.add(accumulatedHeight);
+					}
+				}
+				System.out.println("Done parsing api.");
+
+				mHandler.post(new Runnable() {
+
+					@Override
+					public void run() {
+						LinearLayout mainLinearLayout = (LinearLayout) findViewById(R.id.mainScrollLinearLayout);
+						LinearLayout bluredLinearLayout = (LinearLayout) findViewById(R.id.bluredScrollLinearLayout);
+						try {
+
+							for (int i = 0; i < mOrderedImageUrlList.size(); i++) {
+								JSONObject jObj = mOrderedImageUrlList.get(i);
+								int width = Integer.parseInt(jObj.getString(WIDTH_KEY));
+								int height = Integer.parseInt(jObj.getString(HEIGHT_KEY));
+								LinearLayout.LayoutParams Params = new LinearLayout.LayoutParams(width, height);
+								ScaledImageView imageView = new ScaledImageView(MainActivity.this);
+								imageView.setScaleType(ScaleType.FIT_CENTER);
+								imageView.setLayoutParams(Params);
+
+								mainLinearLayout.addView(imageView);
+
+								ScaledImageView bluredImageView = new ScaledImageView(MainActivity.this);
+								bluredImageView.setScaleType(ScaleType.FIT_CENTER);
+								bluredImageView.setLayoutParams(Params);
+								bluredLinearLayout.addView(bluredImageView);
+							}
+
+						} catch (Exception e) {
+							// TODO: handle exception
+						}
+					}
+				});
+				
+				Thread thread = new Thread(new Runnable() {
+					
+					@Override
+					public void run() {
+						mBitmapList = new ArrayList<Bitmap>(mOrderedImageUrlList.size());
+						mBluredBitmapList = new ArrayList<Bitmap>(mOrderedImageUrlList.size());
+						try {
+							for (int i = 0; i < mOrderedImageUrlList.size(); i++) {
+								JSONObject imageInfo = mOrderedImageUrlList.get(i);
+								Bitmap bitmap = BitmapFactory.decodeStream(CommonUtil.fetch(imageInfo.getString(URL_KEY)));
+								mBitmapList.add(i, bitmap);
+								
+								final int index = i;
+								mHandler.post(new Runnable() {
+									
+									@Override
+									public void run() {
+
+										LinearLayout mainLinearLayout = (LinearLayout) findViewById(R.id.mainScrollLinearLayout);
+										Bitmap bitmap = mBitmapList.get(index);
+										ScaledImageView imageView = (ScaledImageView)mainLinearLayout.getChildAt(index);
+
+										// set the Drawable on the ImageView
+										imageView.setImageBitmap(bitmap);
+									}
+								});
+								
+								Thread blurredThread = new Thread(new Runnable() {
+									
+									@Override
+									public void run() {
+										Bitmap bitmap = mBitmapList.get(index);
+										int density = bitmap.getDensity();
+										int width = (int)(bitmap.getWidth() / 2);
+										int height = (int)(bitmap.getHeight() / 2);
+										Bitmap bluredBitmap = Bitmap.createScaledBitmap(bitmap, (width > 0 ? width : 1), (height > 0 ? height : 1), true);
+										blurByRenderScript(bluredBitmap, 5.0f);
+										bluredBitmap.setDensity(density/2);
+										mBluredBitmapList.add(index, bluredBitmap);
+										
+										mHandler.post(new Runnable() {
+											
+											@Override
+											public void run() {
+												LinearLayout bluredLinearLayout = (LinearLayout) findViewById(R.id.bluredScrollLinearLayout);
+												Bitmap bluredBitmap = mBluredBitmapList.get(index);
+												ScaledImageView bluredImageView = (ScaledImageView)bluredLinearLayout.getChildAt(index);
+
+												// set the Drawable on the ImageView
+												bluredImageView.setImageBitmap(bluredBitmap);
+											}
+										});
+									}
+								});
+								
+								blurredThread.start();
+							}
+						} catch (MalformedURLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				});
+				
+				thread.start();
+				
+				mHandler.postDelayed(new Runnable() {
+
+					@Override
+					public void run() {
+						syncBlurViewScroll(mMainScrollView.getScrollX(), mMainScrollView.getScrollY(), mController.getTop());
+					}
+				}, 100);
+
+//				mHandler.post(new Runnable() {
+//
+//					@Override
+//					public void run() {
+//						LinearLayout mainLinearLayout = (LinearLayout) findViewById(R.id.mainScrollLinearLayout);
+//						LinearLayout bluredLinearLayout = (LinearLayout) findViewById(R.id.bluredScrollLinearLayout);
+//						for (int i = 0; i < mBitmapList.size(); i++) {
+//							Bitmap bitmap = mBitmapList.get(i);
+//							ImageView imageView = (ImageView)mainLinearLayout.getChildAt(i);
+//
+//							// set the Drawable on the ImageView
+//							imageView.setImageBitmap(bitmap);
+//
+//							Bitmap bluredBitmap = mBluredBitmapList.get(i);
+//							ImageView bluredImageView = (ImageView)bluredLinearLayout.getChildAt(i);
+//
+//							// set the Drawable on the ImageView
+//							bluredImageView.setImageBitmap(bluredBitmap);
+//						}
+//						
+//						mHandler.postDelayed(new Runnable() {
+//							
+//							@Override
+//							public void run() {
+//								syncBlurViewScroll(mMainScrollView.getScrollX(), mMainScrollView.getScrollY(), mController.getTop());
+//							}
+//						}, 100);
+//					}
+//				});
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+		}
+	}
+
+	private void blurByRenderScript(Bitmap source, float radius) {
+		final Allocation input = Allocation.createFromBitmap(rs, source); //, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
+		final Allocation output = Allocation.createTyped( rs, input.getType() );
+		final ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create( rs, Element.U8_4( rs ) );
+		script.setRadius( 3.f );
+		script.setInput(input);
+		script.forEach(output);
+		output.copyTo(source);
+	}
+
 }

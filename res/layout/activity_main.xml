@@ -5,26 +5,41 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity" >
 
-    <com.mintech.blur.MainWebView
-        android:id="@+id/webview"
+    <com.mintech.blur.MainScrollView
+        android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent" >
 
-    <ScrollView
-        android:id="@+id/scrollView"
-        android:scrollbars="none"
+        <com.mintech.blur.HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" >
+
+            <LinearLayout
+                android:id="@+id/mainScrollLinearLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </com.mintech.blur.HorizontalScrollView>
+    </com.mintech.blur.MainScrollView>
+
+    <com.mintech.blur.BluredScrollView
+        android:id="@+id/bluredScrollView"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:layout_alignParentBottom="true" >
+        android:layout_alignParentBottom="true"
+        android:scrollbars="none" >
 
-        <com.mintech.blur.BlurView
-            android:id="@+id/blurView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:alpha="0.0"
-            android:background="#FFF" />
-        
-    </ScrollView>
+        <HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" >
+
+            <LinearLayout
+                android:id="@+id/bluredScrollLinearLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </HorizontalScrollView>
+    </com.mintech.blur.BluredScrollView>
 
     <com.mintech.blur.ControllerView
         android:id="@+id/controller"
@@ -33,14 +48,5 @@
         android:layout_alignParentBottom="true"
         android:alpha="0.5"
         android:background="@android:color/background_dark" />
-    
-    <TextView 
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="0%"
-        android:textSize="60sp"
-        android:background="#FFF" />
 
 </RelativeLayout>

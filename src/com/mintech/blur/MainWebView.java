@@ -10,7 +10,7 @@ import android.widget.RelativeLayout;
 
 public class MainWebView extends WebView {
 	
-	private ScrollView delegateScrollView;
+	private WebView delegateScrollView;
 
 	public MainWebView(Context context) {
 		super(context);
@@ -24,8 +24,8 @@ public class MainWebView extends WebView {
 		super(context, attrs, defStyle);
 	}
 
-	public void setDelegateScrollView(ScrollView delegateScrollView) {
-		this.delegateScrollView = delegateScrollView;
+	public void setDelegateScrollView(WebView mBlurView) {
+		this.delegateScrollView = mBlurView;
 	}
 
 	@Override
