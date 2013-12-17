@@ -2,6 +2,7 @@ package com.mintech.blur;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 
 public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 
@@ -23,4 +24,8 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 		}
 	}
 
+	@Override
+	public boolean onTouchEvent(MotionEvent ev) {
+		return false;
+	}
 }
