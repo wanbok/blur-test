@@ -12,7 +12,7 @@ public class ScaledImageView extends ImageView {
 	
 	public ScaledImageView(Context context) {
 		super(context);
-		// TODO Auto-generated constructor stub
+		this.setClickable(false);
 	}
     
     public void scale(float scaleFactor) {
